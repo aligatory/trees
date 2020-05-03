@@ -1,0 +1,14 @@
+version: '2.4'
+services:
+  code:
+    image: "trees"
+    container_name: "trees"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+
+
+
+
