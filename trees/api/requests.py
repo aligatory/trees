@@ -9,7 +9,7 @@ itsm_base = 'https://training-2.itsm365.com/sd/services/rest/'
 access_key = '5aa5a90f-f56f-4be9-8e44-7738f5ce6420'
 import requests
 
-success = 'http://localhost/success'
+success = 'http://185.189.14.105/success'
 
 
 @router.get('/')
