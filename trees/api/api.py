@@ -1,14 +1,10 @@
-
 from http import HTTPStatus
 from pathlib import Path
 import requests
 from fastapi import APIRouter, Form, File, UploadFile
 from fastapi.responses import RedirectResponse
-from pydantic import BaseSettings
 from requests import Response
 from trees.config import service_settings
-
-
 
 router = APIRouter()
 itsm_base = 'https://training-2.itsm365.com/sd/services/rest'
@@ -16,16 +12,6 @@ access_key = 'a1d0e18a-9ffb-4c7c-950c-12c68f50ccb3'
 
 success = f'{service_settings.base_url}/success'
 add_photo_url = f"{itsm_base}/add-file"
-# path = Path(__file__).resolve().parent.parent
-# filee = open(str(path / "file.png"), "rb")
-# files = {'file': ("file.png", filee, "multipart/form-data")}
-#
-#
-#
-# print(response.status_code)
-# print(response.text)
-# print(response.request.headers)
-
 
 
 @router.post('/')
