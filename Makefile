@@ -27,9 +27,7 @@ format:
 	$(VENV)/bin/unify --in-place --recursive $(ALL)
 
 up: 
-	uvicorn $(CODE).app:app --host=0.0.0.0
-
-
+	uvicorn $(CODE).app:app --host=0.0.0.0 --port=8000
 
 build:
 	docker-compose build code
