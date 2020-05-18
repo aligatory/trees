@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from trees.api import trees
-from trees.api import requests
+from trees.api import index
+from trees.api import api
 
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(trees.router)
-    app.include_router(requests.router, prefix='/requests')
+    app.include_router(index.router)
+    app.include_router(api.router, prefix='/requests')
     return app
