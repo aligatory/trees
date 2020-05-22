@@ -21,11 +21,11 @@ async def get_report_page(req: Request):
 @router.get('/volunteers')
 async def get_volunteers_page(req: Request):
     return templetes.TemplateResponse("volunteers.html", {"request": req, "base_url": base_url})
-# @router.get('/success')
-# async def ok() -> Any:
-#     return 'Заявка успешно оставлена'
-#
-#
-# @router.get('/')
-# async def get_page(req: Request) -> Any:
-#     return templetes.TemplateResponse('complain.html', {'request': req})
+@router.get('/success')
+async def ok() -> Any:
+    return 'Заявка успешно оставлена'
+
+
+@router.get('/report_form')
+async def get_page(req: Request) -> Any:
+    return templetes.TemplateResponse('complain.html', {'request': req})

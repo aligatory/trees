@@ -7,8 +7,8 @@ from requests import Response
 from trees.url import base_url
 
 router = APIRouter()
-itsm_base = 'https://training-2.itsm365.com/sd/services/rest'
-access_key = 'a1d0e18a-9ffb-4c7c-950c-12c68f50ccb3'
+itsm_base = 'https://training-1.itsm365.com/sd/services/rest'
+access_key = 'd766a952-de5b-4b00-a209-a16954eac7e7'
 
 success = f'{base_url}/success'
 add_photo_url = f"{itsm_base}/add-file"
@@ -19,18 +19,20 @@ async def create_request(last_name: str = Form(...), first_name: str = Form(...)
                          phone_number: str = Form(...), email: str = Form(...), photo: UploadFile = File(...)):
     response: Response = requests.post(f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
                                        json={'metaClass': 'serviceCall$complaint',
-                                             'agreement': 'agreement$2994803',
+                                             'client': 'employee$3250001',
+                                             'service' : 'slmService$3269602',
+                                             'agreement': 'agreement$605301',
                                              'shortDescr': 'Жалоба на незаконный спил',
-                                             'fullnameUser': last_name + first_name,
+                                             'userName': f'{last_name} {first_name}',
                                              'phoneNumber': phone_number,
-                                             'email': email})
+                                             'userMail': email})
     if response.status_code == HTTPStatus.CREATED:
         res = response.json()
         uuid = res["UUID"]
         print(uuid)
-        p = Path(__file__).resolve().parent.parent / "file.png"
         a = f"{add_photo_url}/{uuid}?accessKey={access_key}&attrCode=photo"
-        r = requests.post(a, files={'photo': (photo.file.name, open(str(p), "rb"), "multipart/form-data")})
+        photo_bytes = await photo.read()
+        r = requests.post(a, files={'photo': ("photo.png", photo_bytes, "multipart/form-data")})
         print(r.status_code)
         print(r.text)
         return RedirectResponse(success, HTTPStatus.SEE_OTHER.value)
@@ -38,3 +40,6 @@ async def create_request(last_name: str = Form(...), first_name: str = Form(...)
         print(response.text)
         print(response.status_code)
         return "Произошла ошибка"
+
+
+path = Path(__file__).parent.parent / "image.png"
