@@ -20,7 +20,7 @@ async def create_request(last_name: str = Form(...), first_name: str = Form(...)
     response: Response = requests.post(f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
                                        json={'metaClass': 'serviceCall$complaint',
                                              'client': 'employee$3250001',
-                                             'service' : 'slmService$3269602',
+                                             'service': 'slmService$3269602',
                                              'agreement': 'agreement$605301',
                                              'shortDescr': 'Жалоба на незаконный спил',
                                              'userName': f'{last_name} {first_name}',
