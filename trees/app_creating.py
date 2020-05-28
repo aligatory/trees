@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from trees.api import index
-from trees.api import api
+from trees.api import api, index
 
 
 def create_app() -> FastAPI:
