@@ -17,9 +17,18 @@ add_photo_url = f"{itsm_base}/add-file"
 @router.post('/')
 async def create_request(last_name: str = Form(...), first_name: str = Form(...),
                          phone_number: str = Form(...), email: str = Form(...), photo: UploadFile = File(...)):
+    response1: Response = requests.post(f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
+    json={'metaClass':
+                                                                                                    'employee$contactPerson',
+                                                                                                'parent': 'ou$3246521',
+                                                                                                'lastName': last_name,
+                                                                                                'firstName': first_name,
+                                                                                                'email': email})
+
+
     response: Response = requests.post(f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
                                        json={'metaClass': 'serviceCall$complaint',
-                                             'client': 'employee$3250001',
+                                             'client': response1.json()['UUID'],
                                              'service': 'slmService$3269602',
                                              'agreement': 'agreement$605301',
                                              'shortDescr': 'Жалоба на незаконный спил',
