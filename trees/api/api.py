@@ -1,7 +1,9 @@
 from http import HTTPStatus
 from pathlib import Path
 
+import aiohttp
 import requests
+from aiohttp import FormData
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 from requests import Response
@@ -15,7 +17,7 @@ success = f'{base_url}/success'
 add_photo_url = f"{itsm_base}/add-file"
 
 
-@router.post('/')
+@router.post('/complaint')
 async def create_request(
         last_name: str = Form(...),
         first_name: str = Form(...),
@@ -23,53 +25,110 @@ async def create_request(
         email: str = Form(...),
         photo: UploadFile = File(...),
 ):
-    response123: Response = requests.post(f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}', json={
-        'email': email
-    })
-    if len(response123.json()) == 0:
-        response1: Response = requests.post(
-            f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
-            json={
-                'metaClass': 'employee$contactPerson',
-                'parent': 'ou$3246521',
-                'lastName': last_name,
-                'firstName': first_name,
-                'email': email,
-            },
-        )
-        uuid = response1.json()['UUID']
-    else:
-        uuid = response123.json()[0]['UUID']
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}',
+                json={'email': email},
+        ) as resp:
+            json_ = await resp.json()
+    if len(json_) == 0:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
+                    json={
+                        'metaClass': 'employee$contactPerson',
+                        'parent': 'ou$3246521',
+                        'lastName': last_name,
+                        'firstName': first_name,
+                        'email': email,
+                    },
+            ) as resp:
+                json1 = await resp.json()
 
-    response: Response = requests.post(
-        f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
-        json={
-            'metaClass': 'serviceCall$complaint',
-            'client': uuid,
-            'service': 'slmService$3269602',
-            'agreement': 'agreement$605301',
-            'shortDescr': 'Жалоба на незаконный спил',
-            'userName': f'{last_name} {first_name}',
-            'phoneNumber': phone_number,
-            'userMail': email,
-        },
-    )
-    if response.status_code == HTTPStatus.CREATED:
-        res = response.json()
+        uuid = json1['UUID']
+    else:
+        uuid = json_[0]['UUID']
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
+                json={
+                    'metaClass': 'serviceCall$complaint',
+                    'client': uuid,
+                    'service': 'slmService$3269602',
+                    'agreement': 'agreement$605301',
+                    'shortDescr': 'Жалоба на незаконный спил',
+                    'userName': f'{last_name} {first_name}',
+                    'phoneNumber': phone_number,
+                    'userMail': email,
+                },
+        ) as resp:
+            res = await resp.json()
+
+    if resp.status == HTTPStatus.CREATED:
         uuid = res["UUID"]
-        print(uuid)
-        a = f"{add_photo_url}/{uuid}?accessKey={access_key}&attrCode=photo"
         photo_bytes = await photo.read()
-        r = requests.post(
-            a, files={'photo': ("photo.png", photo_bytes, "multipart/form-data")}
-        )
-        print(r.status_code)
-        print(r.text)
+        async with aiohttp.ClientSession() as session:
+            data = FormData()
+            data.add_field('photo', photo_bytes, filename="photo.png", content_type="multipart/form-data")
+            async with session.post(
+                    f"{add_photo_url}/{uuid}?accessKey={access_key}&attrCode=photo", data=data
+            ) as resp:
+                pass
+
+        print(resp.status)
         return RedirectResponse(success, HTTPStatus.SEE_OTHER.value)
     else:
-        print(response.text)
-        print(response.status_code)
+        print(resp.status)
         return "Произошла ошибка"
+
+
+# @router.post('/grow_on_yard')
+# async def grow_on_yard(
+#         last_name: str = Form(...),
+#         first_name: str = Form(...),
+#         phone_number: str = Form(...),
+#         email: str = Form(...),
+# ):
+#     async with aiohttp.ClientSession() as session:
+#         async with session.post(
+#                 f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}',
+#                 json={'email': email},
+#         ) as resp:
+#             json_ = await resp.json()
+#     if len(json_) == 0:
+#         async with aiohttp.ClientSession() as session:
+#             async with session.post(
+#                     f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
+#                     json={
+#                         'metaClass': 'employee$contactPerson',
+#                         'parent': 'ou$3246521',
+#                         'lastName': last_name,
+#                         'firstName': first_name,
+#                         'email': email,
+#                     },
+#             ) as resp:
+#                 json1 = await resp.json()
+#
+#         uuid = json1['UUID']
+#     else:
+#         uuid = json_[0]['UUID']
+#     async with aiohttp.ClientSession() as session:
+#         async with session.post(
+#                 f'{itsm_base}/create-m2m/serviceCall$NewTRee?accessKey={access_key}',
+#                 json={
+#                     'metaClass': 'serviceCall$NewTree',
+#                     'client': uuid,
+#                     'service': 'slmService$3349501',
+#                     'agreement': 'agreement$605301',
+#                     'shortDescr': 'Посадка дерева',
+#                     'userName': f'{last_name} {first_name}',
+#                     'phoneNumber': phone_number,
+#                 },
+#         ) as resp:
+#             res = await resp.json()
+#
+#     if resp.status == HTTPStatus.CREATED:
+#         return RedirectResponse(success, HTTPStatus.SEE_OTHER.value)
 
 
 path = Path(__file__).parent.parent / "image.png"
