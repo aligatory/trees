@@ -76,9 +76,11 @@ async def get_user_uuid(email, first_name, last_name):
                         'lastName': last_name,
                         'firstName': first_name,
                         'email': email,
+                        'login': email,
                     },
             ) as resp:
                 json1 = await resp.json()
+
 
         uuid = json1['UUID']
     else:
