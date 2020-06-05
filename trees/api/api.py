@@ -4,7 +4,7 @@ from pathlib import Path
 import aiohttp
 import requests
 from aiohttp import FormData
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from fastapi.responses import RedirectResponse
 from requests import Response
 from trees.url import base_url
@@ -17,7 +17,7 @@ success = f'{base_url}/success'
 add_photo_url = f"{itsm_base}/add-file"
 
 
-@router.post('/complaint')
+@router.post('/complaint', status_code=HTTPStatus.CREATED.value)
 async def create_request(
         last_name: str = Form(...),
         first_name: str = Form(...),
@@ -25,29 +25,7 @@ async def create_request(
         email: str = Form(...),
         photo: UploadFile = File(...),
 ):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-                f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}',
-                json={'email': email},
-        ) as resp:
-            json_ = await resp.json()
-    if len(json_) == 0:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
-                    json={
-                        'metaClass': 'employee$contactPerson',
-                        'parent': 'ou$3246521',
-                        'lastName': last_name,
-                        'firstName': first_name,
-                        'email': email,
-                    },
-            ) as resp:
-                json1 = await resp.json()
-
-        uuid = json1['UUID']
-    else:
-        uuid = json_[0]['UUID']
+    uuid = await get_user_uuid(email, first_name, last_name)
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 f'{itsm_base}/create-m2m/serviceCall$complaint?accessKey={access_key}',
@@ -76,59 +54,91 @@ async def create_request(
                 pass
 
         print(resp.status)
-        return RedirectResponse(success, HTTPStatus.SEE_OTHER.value)
     else:
         print(resp.status)
         return "Произошла ошибка"
 
 
-# @router.post('/grow_on_yard')
-# async def grow_on_yard(
-#         last_name: str = Form(...),
-#         first_name: str = Form(...),
-#         phone_number: str = Form(...),
-#         email: str = Form(...),
-# ):
-#     async with aiohttp.ClientSession() as session:
-#         async with session.post(
-#                 f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}',
-#                 json={'email': email},
-#         ) as resp:
-#             json_ = await resp.json()
-#     if len(json_) == 0:
-#         async with aiohttp.ClientSession() as session:
-#             async with session.post(
-#                     f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
-#                     json={
-#                         'metaClass': 'employee$contactPerson',
-#                         'parent': 'ou$3246521',
-#                         'lastName': last_name,
-#                         'firstName': first_name,
-#                         'email': email,
-#                     },
-#             ) as resp:
-#                 json1 = await resp.json()
-#
-#         uuid = json1['UUID']
-#     else:
-#         uuid = json_[0]['UUID']
-#     async with aiohttp.ClientSession() as session:
-#         async with session.post(
-#                 f'{itsm_base}/create-m2m/serviceCall$NewTRee?accessKey={access_key}',
-#                 json={
-#                     'metaClass': 'serviceCall$NewTree',
-#                     'client': uuid,
-#                     'service': 'slmService$3349501',
-#                     'agreement': 'agreement$605301',
-#                     'shortDescr': 'Посадка дерева',
-#                     'userName': f'{last_name} {first_name}',
-#                     'phoneNumber': phone_number,
-#                 },
-#         ) as resp:
-#             res = await resp.json()
-#
-#     if resp.status == HTTPStatus.CREATED:
-#         return RedirectResponse(success, HTTPStatus.SEE_OTHER.value)
+async def get_user_uuid(email, first_name, last_name):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'{itsm_base}/find/employee$contactPerson?accessKey={access_key}',
+                json={'email': email},
+        ) as resp:
+            json_ = await resp.json()
+    if len(json_) == 0:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    f'{itsm_base}/create-m2m/employee$contactPerson?accessKey={access_key}',
+                    json={
+                        'metaClass': 'employee$contactPerson',
+                        'parent': 'ou$3246521',
+                        'lastName': last_name,
+                        'firstName': first_name,
+                        'email': email,
+                    },
+            ) as resp:
+                json1 = await resp.json()
+
+        uuid = json1['UUID']
+    else:
+        uuid = json_[0]['UUID']
+    return uuid
+
+
+@router.post('/grow_on_street', status_code=HTTPStatus.CREATED.value)
+async def grow_on_street(
+        last_name: str = Form(...),
+        first_name: str = Form(...),
+        phone_number: str = Form(...),
+        email: str = Form(...),
+):
+    uuid = await get_user_uuid(email, first_name, last_name)
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'{itsm_base}/create-m2m/serviceCall$growingTree?accessKey={access_key}',
+                json={
+                    'metaClass': 'serviceCall$growingTree',
+                    'client': uuid,
+                    'service': 'slmService$3374401',
+                    'agreement': 'agreement$605301',
+                    'shortDescr': 'Посадка дерева',
+                    'userName': f'{last_name} {first_name}',
+                    'phoneNumber': phone_number,
+                    'lastName': last_name,
+                    'firstName': first_name
+                },
+        ) as resp:
+            print(resp.status)
+            if resp.status != HTTPStatus.CREATED.value:
+                raise HTTPException(HTTPStatus.BAD_REQUEST.value)
+
+
+@router.post('/grow_on_yard', status_code=HTTPStatus.CREATED.value)
+async def grow_on_yard(
+        last_name: str = Form(...),
+        first_name: str = Form(...),
+        phone_number: str = Form(...),
+        email: str = Form(...),
+):
+    uuid = await get_user_uuid(email, first_name, last_name)
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'{itsm_base}/create-m2m/serviceCall$growingTree?accessKey={access_key}',
+                json={
+                    'metaClass': 'serviceCall$growingTree',
+                    'client': uuid,
+                    'service': 'slmService$3349501',
+                    'agreement': 'agreement$605301',
+                    'shortDescr': 'Посадка дерева',
+                    'userName': f'{last_name} {first_name}',
+                    'phoneNumber': phone_number,
+                    'lastName' : last_name,
+                    'firstName':first_name
+                },
+        ) as resp:
+            if resp.status != HTTPStatus.CREATED.value:
+                raise HTTPException(HTTPStatus.BAD_REQUEST.value)
 
 
 path = Path(__file__).parent.parent / "image.png"
