@@ -29,6 +29,11 @@ async def get_volunteers_page(req: Request):
     )
 
 
+@router.get('/city_plant')
+async def get_city_plant_page(req: Request):
+    return templetes.TemplateResponse('city_plant.html', {'request': req, "base_url": base_url})
+
+
 @router.get('/success')
 async def ok() -> Any:
     return 'Заявка успешно оставлена'
