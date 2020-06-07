@@ -9660,24 +9660,63 @@
                 <div class="form">
                     <h3>Фамилия <span style="color:red">*</span></h3>
                     <label>
-                        <input placeholder="Ваша фамилия" type="text">
+                        <input placeholder="Ваша фамилия" type="text" name="last_name">
                     </label>
                     <h3>Имя <span style="color:red">*</span></h3>
                     <label>
-                        <input placeholder="Ваше имя" type="text">
+                        <input placeholder="Ваше имя" type="text" name="first_name">
                     </label>
                     <h3>Номер телефона</h3>
                     <label>
-                        <input placeholder="+7 (123) 456-78-90" type="tel">
+                        <input placeholder="+7 (123) 456-78-90" type="tel" name="phone_number">
                     </label>
                     <h3>E-mail <span style="color:red">*</span></h3>
                     <label>
-                        <input placeholder="example@mail.ru" type="email">
+                        <input placeholder="example@mail.ru" type="email" name="email">
                     </label>
-                    <button class="submit_button"> Отправить</button>
+                    <button id="button" class="submit_button"> Отправить</button>
                 </div>
             </form>
         </div>
+
+        <script>
+            function on_load_completed() {
+                document.getElementById('button').style.visibility = 'visible';
+            }
+
+            function on_load() {
+
+                document.getElementById('button').style.visibility = 'hidden';
+            }
+
+            const base_url = '{{base_url}}';
+            const form = document.getElementById('form');
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                on_load();
+                const form_data = new FormData(form);
+                if (form_data.get('last_name') === '' || form_data.get('first_name') === '' ||
+                    form_data.get('phone_number') === '' || form_data.get('email') === '') {
+                    alert('Не все поля заполнены');
+                    on_load_completed();
+                    return;
+                }
+                const response = await fetch(base_url + '/requests/grow_on_yard', {
+                    method: 'post',
+                    body: form_data
+                });
+                if (response.status === 201) {
+                    on_load_completed();
+                    alert('Данные приняты, сейчас вам придет письмо на почту');
+                } else {
+                    alert('Произошла ошибка. Попробуйте позже')
+                    on_load_completed()
+                }
+
+            };
+
+
+        </script>
 
         <div class="foot-wr">
             Нажимая на кнопку, вы даете согласие на <a
