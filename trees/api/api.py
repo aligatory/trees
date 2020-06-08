@@ -77,10 +77,10 @@ async def get_user_uuid(email, first_name, last_name):
                         'firstName': first_name,
                         'email': email,
                         'login': email,
+                        'teams': ['team$3428601']
                     },
             ) as resp:
                 json1 = await resp.json()
-
 
         uuid = json1['UUID']
     else:
@@ -95,13 +95,13 @@ async def grow_on_street(
         phone_number: str = Form(...),
         email: str = Form(...),
 ):
-    uuid = await get_user_uuid(email, first_name, last_name)
+    user_uuid = await get_user_uuid(email, first_name, last_name)
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 f'{itsm_base}/create-m2m/serviceCall$growingTree?accessKey={access_key}',
                 json={
                     'metaClass': 'serviceCall$growingTree',
-                    'client': uuid,
+                    'client': user_uuid,
                     'service': 'slmService$3374401',
                     'agreement': 'agreement$605301',
                     'shortDescr': 'Посадка дерева',
@@ -135,8 +135,8 @@ async def grow_on_yard(
                     'shortDescr': 'Посадка дерева',
                     'userName': f'{last_name} {first_name}',
                     'phoneNumber': phone_number,
-                    'lastName' : last_name,
-                    'firstName':first_name
+                    'lastName': last_name,
+                    'firstName': first_name
                 },
         ) as resp:
             if resp.status != HTTPStatus.CREATED.value:
