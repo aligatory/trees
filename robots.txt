@@ -1,2 +1,2 @@
-User-Agent: Yandex;
+User-Agent: Yandex
 Allow: /
