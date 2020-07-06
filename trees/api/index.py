@@ -47,3 +47,8 @@ async def ok() -> Any:
 @router.get('/report_form')
 async def get_page(req: Request) -> Any:
     return templetes.TemplateResponse('complain.html', {'request': req})
+
+
+@router.get('/robots.txt')
+async def get_robots_txt(req: Request):
+    return templetes.TemplateResponse('robots.txt', {'request': req, "base_url": base_url})
