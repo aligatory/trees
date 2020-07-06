@@ -47,12 +47,3 @@ async def ok() -> Any:
 @router.get('/report_form')
 async def get_page(req: Request) -> Any:
     return templetes.TemplateResponse('complain.html', {'request': req})
-
-
-@router.get('/robots.txt')
-async def get_robots_txt():
-    robots = open('robots.txt', 'r')
-    try:
-        return robots.read()
-    finally:
-        robots.close()
