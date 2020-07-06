@@ -51,4 +51,8 @@ async def get_page(req: Request) -> Any:
 
 @router.get('/robots.txt')
 async def get_robots_txt():
-    return open('robots.txt', 'r')
+    robots = open('robots.txt', 'r')
+    try:
+        return robots.read()
+    finally:
+        robots.close()
