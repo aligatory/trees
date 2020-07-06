@@ -1,2 +1,4 @@
 User-Agent: Yandex
 Allow: /
+Disallow: /docs
+Disallow: /requests/

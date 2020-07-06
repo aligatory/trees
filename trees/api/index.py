@@ -50,5 +50,5 @@ async def get_page(req: Request) -> Any:
 
 
 @router.get('/robots.txt')
-async def get_robots_txt(req: Request):
-    return templetes.TemplateResponse('robots.txt', {'request': req, "base_url": base_url})
+async def get_robots_txt():
+    return open('robots.txt', 'r')
