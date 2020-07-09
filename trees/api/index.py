@@ -6,7 +6,6 @@ from starlette.responses import FileResponse
 from starlette.templating import Jinja2Templates
 from trees.url import base_url
 
-
 router = APIRouter()
 templetes = Jinja2Templates(directory='trees/templates')
 
@@ -55,4 +54,10 @@ async def get_page(req: Request) -> Any:
 @router.get('/robots.txt')
 async def get_robots_txt():
     p = Path(__file__).parent.parent / 'robots.txt'
+    return FileResponse(str(p))
+
+
+@router.get('/sitemap.xml')
+async def get_robots_txt():
+    p = Path(__file__).parent.parent / 'sitemap.xml'
     return FileResponse(str(p))

@@ -2,3 +2,4 @@ User-Agent: Yandex
 Allow: /
 Disallow: /docs
 Disallow: /requests/
+Sitemap: http://ekb-trees-help.ru/sitemap.xml
