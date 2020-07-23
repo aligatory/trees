@@ -7,11 +7,13 @@ from aiohttp import FormData
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from fastapi.responses import RedirectResponse
 from requests import Response
+
+from trees.config import service_settings
 from trees.url import base_url
 
 router = APIRouter()
 itsm_base = 'https://training-1.itsm365.com/sd/services/rest'
-access_key = 'f2f348c8-25c0-4fb4-b819-fc99d421aca7'
+access_key = service_settings.access_key
 
 success = f'{base_url}/success'
 add_photo_url = f"{itsm_base}/add-file"
